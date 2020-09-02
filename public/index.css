@@ -1,8 +1,8 @@
 body {
   font-family: 'Archivo', sans-serif;
   color:white;
-  text-align:center;
   background-image:url(y-so-serious.png);
+  margin:0;
 }
 a {
   color:cadetblue;

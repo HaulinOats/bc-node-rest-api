@@ -8,6 +8,7 @@ import Text from './Text.js'
 class GameScene extends Phaser.Scene {
   constructor(){
     super({scene:'GameScene'});
+    this.isMobile = window.innerHeight > window.innerWidth ? true : false;
     this.enemyWidth = 0;
     this.enemyHeight = 0;
     this.enemyPadding = 10;
@@ -60,7 +61,7 @@ class GameScene extends Phaser.Scene {
     this.shipLasers = this.physics.add.group({ 
       classType: ShipLaser, 
       runChildUpdate: true,
-      maxSize:10
+      maxSize:15
     });
 
     this.enemies = this.physics.add.group({
@@ -77,7 +78,7 @@ class GameScene extends Phaser.Scene {
 
     //create text objects
     this.scoreText = new Text(this, 10, 10, `Score: 0`, {});
-    this.mainText = new Text(this, this.game.config.width/2, this.game.config.height/2, '', {fontSize:'30px'}).setOrigin(0.5).setVisible(false);
+    this.gameOverBtn = new Text(this, this.game.config.width/2, this.game.config.height/2, 'Game Over\nPress Enter', {fontSize:'40px', backgroundColor:'#FFF', color:'#000'}).setVisible(false).setOrigin(0.5).setInteractive();
     this.nextLevelBtn = new Text(this, this.game.config.width/2, this.game.config.height/2, 'Next Level\nPress Enter', {fontSize:'40px',backgroundColor:'#FFF', color:'#000'}).setVisible(false).setOrigin(0.5).setInteractive();
 
     //handle player input
@@ -98,8 +99,24 @@ class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.playerShip, this.enemyBullets, this.playerHit, null, this);
 
     //event listeners
+    console.log(this.isMobile);
+    if(this.isMobile){
+      this.pointer = this.input.on('pointermove', (pointer)=>{
+        if(pointer.x < this.game.config.width &&
+          pointer.x > 0 &&
+          pointer.y > 0 &&
+          pointer.y < this.game.config.height &&
+          !this.gameOver){
+            this.playerFire();
+            this.playerShip.setPosition(pointer.x, pointer.y)
+        }
+      })
+    }
     this.nextLevelBtn.on('pointerdown', ()=>{
       this.goToNextLevel();
+    });
+    this.gameOverBtn.on('pointerdown', ()=>{
+      this.resetGame();
     })
   }
 
@@ -217,7 +234,7 @@ class GameScene extends Phaser.Scene {
     player.setVisible(false);
     this.emitter.stop();
     this.gameOver = true;
-    this.mainText.setVisible(true).setText('Game Over\nEnter to Restart');
+    this.gameOverBtn.setVisible(true);
   }
 
   playerFire(){
@@ -247,17 +264,18 @@ class GameScene extends Phaser.Scene {
   shipCrash(){
     this.playerShip.setVisible(false);
     this.emitter.stop();
-    this.mainText.setVisible(true).setText('Game Over\nEnter To Restart');
+    this.gameOverBtn.setVisible(true);
     this.gameOver = true;
   }
 
   resetGame(){
     this.score = 0;
+    this.scoreText.setText('Score: 0');
     this.enemySpeed = 1;
     this.gameOver = false;
     this.enemyLastFired = this.game.getTime() + this.enemyBulletDelay;
     this.enemies.clear(true, true);
-    this.mainText.setVisible(false);
+    this.gameOverBtn.setVisible(false);
     this.playerShip.setVisible(true).setPosition(200, 550);
     this.emitter.start();
     this.populateEnemies();
