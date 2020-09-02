@@ -99,7 +99,6 @@ class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.playerShip, this.enemyBullets, this.playerHit, null, this);
 
     //event listeners
-    console.log(this.isMobile);
     if(this.isMobile){
       this.pointer = this.input.on('pointermove', (pointer)=>{
         if(pointer.x < this.game.config.width &&
@@ -108,7 +107,7 @@ class GameScene extends Phaser.Scene {
           pointer.y < this.game.config.height &&
           !this.gameOver){
             this.playerFire();
-            this.playerShip.setPosition(pointer.x, pointer.y)
+            this.playerShip.setPosition(pointer.x - 10, pointer.y - 50)
         }
       })
     }
